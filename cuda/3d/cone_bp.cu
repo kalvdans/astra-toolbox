@@ -245,6 +245,7 @@ bool ConeBP_Array(cudaPitchedPtr D_volumeData,
                   cudaArray *D_projArray,
                   const SDimensions3D& dims, const SConeProjection* angles)
 {
+        cudaDeviceSetCacheConfig(cudaFuncCachePreferL1);
 	bindProjDataTexture(D_projArray);
 
 	for (unsigned int th = 0; th < dims.iProjAngles; th += g_MaxAngles) {
