@@ -5,6 +5,7 @@ boostutf=@HAVEBOOSTUTF@
 
 
 MATLAB_ROOT=@MATLAB_ROOT@
+octave=@HAVEOCTAVE@
 
 TARGETS=libastra.la
 
@@ -14,6 +15,10 @@ endif
 
 ifeq ($(python),yes)
 TARGETS+=py
+endif
+
+ifeq ($(octave),yes)
+TARGETS+=oct
 endif
 
 all: $(TARGETS)
@@ -78,11 +83,15 @@ MEXLDFLAGS='$$LDFLAGS $(LDFLAGS)'
 MEXLIBS   = -L.libs -lut
 MEXSUFFIX = @MEXSUFFIX@
 MEX       = @MEX@
+endif
+
+ifeq ($(octave),yes)
+CPPFLAGS += @OCTAVE_CFLAGS@
+endif
 
 ifeq ($(cuda),yes)
 MEXFLAGS += -DASTRA_CUDA
-endif
-
+OCTFLAGS += -DASTRA_CUDA
 endif
 
 LIBDIR=/usr/local/lib
@@ -234,8 +243,20 @@ MATLAB_MEX=\
 	matlab/mex/astra_mex_log_c.$(MEXSUFFIX) \
 	matlab/mex/astra_mex_data3d_c.$(MEXSUFFIX)
 
+OCTAVE_CXX_OBJECTS=\
+	octave/mex/mexHelpFunctions.o
 
-OBJECT_DIRS = src/ tests/ cuda/2d/ cuda/3d/ matlab/mex/ ./
+OCTAVE_OCT=\
+	octave/mex/astra_mex_algorithm_c.oct \
+	octave/mex/astra_mex_data2d_c.oct \
+	octave/mex/astra_mex_c.oct \
+	octave/mex/astra_mex_matrix_c.oct \
+	octave/mex/astra_mex_projector_c.oct \
+	octave/mex/astra_mex_projector3d_c.oct \
+	octave/mex/astra_mex_data3d_c.oct
+
+
+OBJECT_DIRS = src/ tests/ cuda/2d/ cuda/3d/ matlab/mex/ ./ octave/mex/
 DEPDIRS = $(addsuffix $(DEPDIR),$(OBJECT_DIRS))
 -include $(wildcard $(addsuffix /*.d,$(DEPDIRS)))
 LIBDIRS = $(addsuffix .libs,./ src/ cuda/2d/ cuda/3d/)
@@ -256,12 +277,19 @@ py: libastra.la
 endif
 
 
+ifeq ($(octave),yes)
+oct: $(OCTAVE_OCT)
+%.oct: %.o $(OCTAVE_CXX_OBJECTS) libastra.la
+	@$(MKDIR) $(*D)
+	mkoctfile $(OCTFLAGS) $(LIBS) -L.libs -lastra --output $* $*.o $(OCTAVE_CXX_OBJECTS)
+endif
+
 libastra.la: $(ALL_OBJECTS)
 	./libtool --mode=link --tag=CXX $(LD) -rpath $(LIBDIR) -o $@ $(LDFLAGS) $(LIBS) $+
 
 %.o: %.cpp
 	$(MKDIR) $(*D)/$(DEPDIR)
-	$(CXX) -Wp,-MMD,"$(*D)/$(DEPDIR)/$(*F).d",-MQ,"$@",-MP $(CXXFLAGS) -fPIC -DPIC $(CPPFLAGS) -c $(<) -o $*.o
+	$(CXX) -Wp,-MMD,"$(*D)/$(DEPDIR)/$(*F).d",-MQ,"$@",-MP $(CPPFLAGS) $(CXXFLAGS) -fPIC -DPIC -c $(<) -o $*.o
 
 %.lo: %.cpp
 	$(MKDIR) $(*D)/$(DEPDIR)
@@ -360,6 +388,19 @@ install-python: py
 # TODO: docs
 else
 install-python:
+endif
+
+ifeq ($(octave),yes)
+# TODO: This install location doesn't work well for /usr or /usr/local
+install-octave: $(OCTAVE_OCT)
+	./install-sh -m 755 -d @prefix@/octave
+	./install-sh -m 755 -d @prefix@/octave/oct
+	./install-sh -m 755 -d @prefix@/octave/tools
+	./install-sh -m 644 $(OCTAVE_OCT) @prefix@/octave/oct
+	./install-sh -m 644 ../../octave/tools/*.m @prefix@/octave/tools
+# TODO: docs
+else
+install-octave:
 endif
 
 
