@@ -24,16 +24,4 @@ if test $? -ne 0; then
   fi
 fi
 
-if test ! -e config.guess; then
-  ln -s config.guess.dist config.guess
-fi
-
-if test ! -e config.sub; then
-  ln -s config.sub.dist config.sub
-fi
-
-if test ! -e install-sh; then
-  ln -s install-sh.dist install-sh
-fi
-
 echo "Done."
