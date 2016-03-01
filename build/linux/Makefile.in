@@ -373,17 +373,14 @@ install-octave:
 endif
 
 ifeq ($(python),yes)
+sitepkg=@prefix@/lib/python@PYTHON_VERSION@/dist-packages
 # TODO: This install location doesn't work well for /usr or /usr/local
 install-python: py
-	./install-sh -m 755 -d @prefix@/python
-	./install-sh -m 755 -d @prefix@/python/astra
-	./install-sh -m 644 ../../python/finalbuild/astra/*.so @prefix@/python/astra
-	./install-sh -m 644 ../../python/finalbuild/astra/*.py @prefix@/python/astra
-	./install-sh -m 644 ../../python/finalbuild/*.egg-info @prefix@/python/
-	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	@echo "To use ASTRA in Python, add @prefix@/python/ to your PYTHONPATH"
-	@echo "and @libdir@ to your LD_LIBRARY_PATH."
-	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	./install-sh -m 755 -d $(sitepkg)
+	./install-sh -m 755 -d $(sitepkg)/astra
+	./install-sh -m 644 ../../python/finalbuild/astra/*.so $(sitepkg)/astra
+	./install-sh -m 644 ../../python/finalbuild/astra/*.py $(sitepkg)/astra
+	./install-sh -m 644 ../../python/finalbuild/*.egg-info $(sitepkg)
 # TODO: docs
 else
 install-python:
