@@ -176,6 +176,18 @@ fi
 
 AC_SUBST(HAVEMATLAB)
 
+# octave
+
+AC_PATH_PROG([HAVEOCTAVE], [octave-config], [no], [$PATH])
+AC_MSG_CHECKING([octave])
+if test x"$HAVEOCTAVE" != xno; then
+   OCTAVE_CFLAGS="-I `octave-config -p OCTINCLUDEDIR`"
+   AC_SUBST(OCTAVE_CFLAGS)
+   HAVEOCTAVE=yes
+fi
+AC_MSG_RESULT($HAVEOCTAVE)
+AC_SUBST(HAVEOCTAVE)
+
 # python
 
 AC_ARG_WITH(python, [[  --with-python=path      path of Python binary (optional)]],,)
@@ -258,6 +270,7 @@ echo
 echo "Summary of ASTRA Toolbox build options:"
 echo "  CUDA   : $HAVECUDA"
 echo "  Matlab : $HAVEMATLAB"
+echo "  Octave : $HAVEOCTAVE"
 echo "  Python : $HAVEPYTHON"
 echo
 echo "  prefix : $prefix"

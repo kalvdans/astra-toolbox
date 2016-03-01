@@ -1,5 +1,6 @@
 cuda=@HAVECUDA@
 matlab=@HAVEMATLAB@
+octave=@HAVEOCTAVE@
 python=@HAVEPYTHON@
 boostutf=@HAVEBOOSTUTF@
 
@@ -9,6 +10,10 @@ MATLAB_ROOT=@MATLAB_ROOT@
 TARGETS=libastra.la
 
 ifeq ($(matlab),yes)
+TARGETS+=mex
+endif
+
+ifeq ($(octave),yes)
 TARGETS+=mex
 endif
 
@@ -78,11 +83,15 @@ MEXLDFLAGS='$$LDFLAGS $(LDFLAGS)'
 MEXLIBS   = -L.libs -lut
 MEXSUFFIX = @MEXSUFFIX@
 MEX       = @MEX@
+endif
+
+ifeq ($(octave),yes)
+MEXSUFFIX = mex
+CPPFLAGS += @OCTAVE_CFLAGS@
+endif
 
 ifeq ($(cuda),yes)
 MEXFLAGS += -DASTRA_CUDA
-endif
-
 endif
 
 LIBDIR=/usr/local/lib
@@ -241,11 +250,16 @@ DEPDIRS = $(addsuffix $(DEPDIR),$(OBJECT_DIRS))
 LIBDIRS = $(addsuffix .libs,./ src/ cuda/2d/ cuda/3d/)
 
 
-ifeq ($(matlab),yes)
 mex: $(MATLAB_MEX)
 
+ifeq ($(matlab),yes)
 %.$(MEXSUFFIX): %.o $(MATLAB_CXX_OBJECTS) libastra.la
 	$(MEX) LDFLAGS=$(MEXLDFLAGS) $(MEXFLAGS) $(LIBS) $(MEXLIBS) -lastra -output $* $*.o $(MATLAB_CXX_OBJECTS)
+endif
+
+ifeq ($(octave),yes)
+%.mex: %.o $(MATLAB_CXX_OBJECTS) libastra.la
+	mkoctfile -mex $(MEXFLAGS) $(LIBS) -L.libs -lastra --output $* $*.o $(MATLAB_CXX_OBJECTS)
 endif
 
 ifeq ($(python),yes)
@@ -325,7 +339,7 @@ distclean: clean
 	rm -rf autom4te.cache
 	rm -f configure Makefile
 
-install: install-libraries install-matlab install-python
+install: install-libraries install-matlab install-python install-octave
 
 install-libraries: libastra.la
 	./install-sh -m 755 -d @libdir@
@@ -343,6 +357,19 @@ install-matlab: $(MATLAB_MEX)
 # TODO: docs
 else
 install-matlab:
+endif
+
+ifeq ($(octave),yes)
+# TODO: This install location doesn't work well for /usr or /usr/local
+install-octave: $(MATLAB_MEX)
+	./install-sh -m 755 -d @prefix@/octave
+	./install-sh -m 755 -d @prefix@/octave/oct
+	./install-sh -m 755 -d @prefix@/octave/tools
+	./install-sh -m 644 $(MATLAB_MEX) @prefix@/octave/oct
+	./install-sh -m 644 ../../matlab/tools/*.m @prefix@/octave/tools
+# TODO: docs
+else
+install-octave:
 endif
 
 ifeq ($(python),yes)
