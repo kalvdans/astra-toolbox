@@ -37,8 +37,6 @@ $Id$
 #include "astra/Float32VolumeData3DMemory.h"
 #include "astra/Float32ProjectionData3DMemory.h"
 
-#define USE_MATLAB_UNDOCUMENTED
-
 #ifdef USE_MATLAB_UNDOCUMENTED
 extern "C" {
 mxArray *mxCreateSharedDataCopy(const mxArray *pr);

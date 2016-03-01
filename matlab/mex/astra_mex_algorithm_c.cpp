@@ -35,8 +35,6 @@ $Id$
 #include "mexInitFunctions.h"
 #include "astra/Globals.h"
 
-#define USE_MATLAB_UNDOCUMENTED
-
 #ifdef USE_MATLAB_UNDOCUMENTED
 extern "C" { bool utIsInterruptPending(); }
 
